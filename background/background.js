@@ -1,3 +1,6 @@
+// Import webhook providers
+importScripts('webhook-providers.js');
+
 function makeNotification(title) {
     const showingSeconds = 5;
     chrome.notifications.create(
@@ -22,39 +25,29 @@ function makeNotification(title) {
 }
 
 function zack() {
-    chrome.storage.local.get(['slackWebhookUrl', 'loggingFormatType'], async (data) => {
-        const slackWebhookUrl = data.slackWebhookUrl;
+    chrome.storage.local.get(['webhookUrl', 'webhookType', 'loggingFormatType', 'slackWebhookUrl'], async (data) => {
+        // Support legacy Slack-only configuration
+        const webhookUrl = data.webhookUrl || data.slackWebhookUrl;
+        const webhookType = data.webhookType || 'slack'; // Default to slack for backward compatibility
         const loggingFormatType = data.loggingFormatType || 'markdown';
 
-        if (slackWebhookUrl) {
+        if (webhookUrl) {
             try {
                 chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
                     const activeTab = tabs[0];
                     if (activeTab && activeTab.url) {
-                        let text = '';
-                        if (loggingFormatType === 'markdown') {
-                            text = `<${activeTab.url}|${activeTab.title}>`;
-                        } else if (loggingFormatType === 'simple') {
-                            text = `${activeTab.title}\n${activeTab.url}`;
-                        } else if (loggingFormatType === 'url-only') {
-                            text = `${activeTab.url}`;
-                        }
+                        try {
+                            const provider = window.WebhookProviders.createWebhookProvider(webhookType, webhookUrl);
+                            const payload = provider.formatPayload(activeTab.title, activeTab.url, loggingFormatType);
+                            const response = await provider.sendMessage(payload);
 
-                        const response = await fetch(slackWebhookUrl, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                text,
-                                unfurl_links: true,
-                            }),
-                        });
-
-                        if (response.ok) {
-                            makeNotification('Saved the current page');
-                        } else {
-                            makeNotification('Webhook request failed');
+                            if (response.ok) {
+                                makeNotification('Saved the current page');
+                            } else {
+                                makeNotification('Webhook request failed');
+                            }
+                        } catch (providerError) {
+                            makeNotification(`Error: ${providerError.message}`);
                         }
                     } else {
                         makeNotification('No active tab found');
