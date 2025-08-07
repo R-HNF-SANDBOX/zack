@@ -95,7 +95,11 @@ function createWebhookProvider(providerType, webhookUrl) {
 // Export for use in background.js
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { WebhookProvider, SlackProvider, DiscordProvider, createWebhookProvider };
-} else {
-    // For browser environment
-    window.WebhookProviders = { WebhookProvider, SlackProvider, DiscordProvider, createWebhookProvider };
+}
+// In service worker context, make functions available globally
+if (typeof self !== 'undefined' && typeof importScripts !== 'undefined') {
+    self.WebhookProvider = WebhookProvider;
+    self.SlackProvider = SlackProvider;
+    self.DiscordProvider = DiscordProvider;
+    self.createWebhookProvider = createWebhookProvider;
 }

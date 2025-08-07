@@ -37,7 +37,7 @@ function zack() {
                     const activeTab = tabs[0];
                     if (activeTab && activeTab.url) {
                         try {
-                            const provider = window.WebhookProviders.createWebhookProvider(webhookType, webhookUrl);
+                            const provider = createWebhookProvider(webhookType, webhookUrl);
                             const payload = provider.formatPayload(activeTab.title, activeTab.url, loggingFormatType);
                             const response = await provider.sendMessage(payload);
 
