@@ -1,2 +1,7 @@
 .DS_Store
 *.svg
+
+# Temporary validation/test files (if any are created during development)
+/tmp/
+*.tmp
+*.log
