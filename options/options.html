@@ -32,10 +32,23 @@
     </p>
 
     <div class="mb-3">
+      <label for="webhook-type">
+        <b>Webhook Type:</b>
+      </label>
+      <select id="webhook-type" class="form-control">
+        <option value="slack">Slack</option>
+        <option value="discord">Discord</option>
+      </select>
+      <small class="form-text text-muted">
+        Choose the communication platform for your webhook.
+      </small>
+    </div>
+
+    <div class="mb-3">
       <label for="webhook-url">
         <b>Webhook URL:</b>
       </label>
-      <input type="text" id="webhook-url" placeholder="https://hooks.slack.com/services/..." class="form-control">
+      <input type="text" id="webhook-url" placeholder="https://hooks.slack.com/services/... or https://discord.com/api/webhooks/..." class="form-control">
     </div>
 
     <div class="mb-3">
